@@ -18,6 +18,29 @@ type rootTileMap struct {
 	PosY   float64
 	Height float64
 	Width  float64
+	cost int
+}
+
+func AStar(start, goal *rootTileMap, grid []*rootTileMap) []*rootTileMap {
+    var closedSet []*rootTileMap
+    var openSet = []*rootTileMap{start}
+    start.cost = 0
+
+    for len(openSet) > 0 {
+        var current = openSet[0]
+        if current == goal {
+            var path []*rootTileMap
+            for current != nil {
+                path = append([]*rootTileMap{current}, path...)
+            }
+            return path
+        }
+        openSet = openSet[1:]
+        closedSet = append(closedSet, current)
+        // Code for updating cost and checking for better paths
+        // Code for adding neighbors to the openSet
+    }
+    return nil
 }
 
 func (tile *rootTileMap) Draw(screen *ebiten.Image) {

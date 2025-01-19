@@ -2,10 +2,13 @@ package level_scene
 
 import (
 	"d_game/core/game"
+	"d_game/core/gobjects"
 	"d_game/core/gscene"
 )
 
 type scene = gscene.Scene[*LevelController]
+type gameObject = gobjects.Object
+type ObjectType = gobjects.ObjectType
 
 type LevelController struct {
 	ctx *game.Context

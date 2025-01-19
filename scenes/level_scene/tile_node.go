@@ -1,23 +1,24 @@
 package level_scene
 
 import (
+	"d_game/core/gobjects"
 	"d_game/core/resolve_collision"
 	"d_game/maps"
-	"fmt"
 )
 
 type tileNode struct {
 	tile maps.TileMapI
-	Object *resolve_collision.Object
-	is_Disposed bool
+	gameObject
 }
 
 func newTile(tile maps.TileMapI) *tileNode {
 	x, y, h, w := tile.GetPosAndSize()
 	return &tileNode{
 		tile: tile,
-		Object: resolve_collision.NewObject(x, y, h, w, "solid"),
-		is_Disposed: true,
+		gameObject: gobjects.Object{
+			Object: resolve_collision.NewObject(x, y, h, w, "solid"),
+			IsDeleted: true,
+		},
 	}
 }
 
@@ -29,15 +30,12 @@ func (t *tileNode) Init(s *scene) {
 }
 
 func (t *tileNode) IsDisposed() bool {
-	return t.is_Disposed
+	return t.IsDeleted
 }
 
 func (t *tileNode) Update(delta float64) {
-	t.is_Disposed = true
+	t.IsDeleted = true
 	if check := t.Object.Check(5, 5, "bullet"); check != nil {
-		fmt.Printf("bullet")
-		t.is_Disposed = true
+		t.IsDeleted = true
 	}
-	
-	// Здесь код, который раньше был в myGame Update.
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func LoadLevelMapData(nameMap string) Map {
-	jsonFile, err := os.Open("C:\\Users\\Sam\\Desktop\\go\\d_game\\maps\\" + nameMap + "\\" + nameMap + ".json")
+	jsonFile, err := os.Open("maps/" + nameMap + "/" + nameMap + ".json")
 	// if we os.Open returns an error then handle it
 	if err != nil {
 		fmt.Println(err)
