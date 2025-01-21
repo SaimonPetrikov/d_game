@@ -6,7 +6,6 @@ import (
 	"d_game/core/gscene"
 	"d_game/core/resolve_collision"
 	utils "d_game/core/utils"
-	"fmt"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -26,16 +25,18 @@ type Policeman struct {
 	gameObject
 	health int
 	angle float64
-	path []string
-	targetTile string
+	path []astar.Pather
+	targetTile astar.Pather
 	indexTargetTile int
 }
 
 func newPoliceman() *Policeman {
-	path := astar.FindPath("2.3", "14.3")
-	fmt.Println(path)
-	indexStartTile := path[0]
-	object := resolve_collision.NewObject(float64(astar.Graph[indexStartTile].Sx), float64(astar.Graph[indexStartTile].Sy), 5, 5, "enemy")
+	from := sceneState.Tiles[31]
+	to := sceneState.Tiles[41]
+	path, _, _ := astar.Path(from.GetTile(), to.GetTile())
+
+	//todo: position to center of tiles
+	object := resolve_collision.NewObject(float64(path[0].GetPosX()), path[0].GetPosY(), 5, 5, "enemy")
 	object.SetShape(resolve_collision.NewRectangle(0, 0, 5, 5))
 	p := &Policeman{
 		health: 1,
@@ -69,17 +70,17 @@ func (p *Policeman) Update(delta float64) {
 	p.Object.Update()
 	p.targetTile = p.path[p.indexTargetTile]
 	if !p.IsDeleted {
-			if astar.Graph[p.targetTile].Sx > int(p.Object.Position.X) {
+			if int(p.targetTile.GetPosX()) > int(p.Object.Position.X) {
 				p.Object.Position.X += 0.1
 			} else {
 				p.Object.Position.X -= 0.1
 			}
-			if astar.Graph[p.targetTile].Sy > int(p.Object.Position.Y) {
+			if int(p.targetTile.GetPosY()) > int(p.Object.Position.Y) {
 				p.Object.Position.Y += 0.1
 			} else {
 				p.Object.Position.Y -= 0.1
 			}
-		if int(p.Object.Position.X+0.001) == astar.Graph[p.targetTile].Sx && int(p.Object.Position.Y+0.001) == astar.Graph[p.targetTile].Sy {
+		if int(p.Object.Position.X+0.001) == int(p.targetTile.GetPosX()) && int(p.Object.Position.Y+0.001) == int(p.targetTile.GetPosY()) {
 			if p.indexTargetTile < len(p.path) - 1 {
 				p.indexTargetTile++
 				p.targetTile = p.path[p.indexTargetTile]

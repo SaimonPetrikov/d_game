@@ -22,6 +22,7 @@ func NewLevelController(ctx *game.Context) *LevelController {
 
 func (c *LevelController) Init(s *gscene.RootScene[*LevelController]) {
 	levelMap := newMap()
+	sceneState.Tiles = levelMap.levelMap.TileSet
 	s.AddObject(levelMap)
 
 	player := newPlayer()

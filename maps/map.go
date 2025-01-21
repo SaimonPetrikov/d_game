@@ -1,9 +1,9 @@
 package maps
 
 import (
-	"d_game/core/astar"
 	"d_game/core/gmap"
 	utils "d_game/core/utils"
+	"fmt"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -13,6 +13,7 @@ import (
 
 type LevelMap struct {
 	data gmap.Map
+	Height, Width int
 	TileImages map[int]*ebiten.Image
 	tileOptions map[int]*ebiten.DrawImageOptions
 	TileSet []TileMapI
@@ -22,95 +23,73 @@ func InitMap (nameMap string) *LevelMap {
 	mapData := gmap.LoadLevelMapData(nameMap)
 	tilesmap := make(map[int]gmap.Tile)
 
-	for _, tile := range mapData.TileSet.Tiles {
-		tilesmap[tile.Id] = tile
-	}
-
-	index := 0
-
 	levelMap := &LevelMap{
 		data: mapData,
 		TileImages: map[int]*ebiten.Image{},
 		tileOptions: map[int]*ebiten.DrawImageOptions{},
 	}
 
+	for _, tile := range mapData.TileSet.Tiles {
+		tilesmap[tile.Id] = tile
+	}
+
+	index := 0
+
+	height := mapData.TileHeight
+	width := mapData.TileWidth
+
+	levelMap.Height, levelMap.Width = height, width
+
 	for indexLayer := 0; indexLayer < len(mapData.Layers); indexLayer++ {
 		layer := mapData.Layers[indexLayer]
 		for i := 0; i < mapData.Height; i++ {
 			for j := 0; j < mapData.Width; j++ {
 				tileId := layer.Data[index]
-				rootTile := &rootTileMap{
+				rootTile := &RootTileMap{
 					TileId: tileId,
 					Image: levelMap.getTileInCacheOrLoad(tileId),
-					PosX: float64(mapData.TileHeight*j),
-					PosY: float64(mapData.TileWidth*i),
-					Height: float64(mapData.TileHeight),
-					Width: float64(mapData.TileWidth),
+					PosX: float64(height*j),
+					PosY: float64(width*i),
+					Height: float64(height),
+					Width: float64(width),
 				}
 				if tilesmap[tileId].Weight == 1 {
-					rootTile.cost = 1
+					rootTile.cost = 100000000
 					levelMap.TileSet = append(levelMap.TileSet, NewWall(rootTile))
 					index++
 					continue
 				} 
 
-				rootTile.cost = 0
-
-
-						
-				//it is floor
+				rootTile.cost = 1
 				levelMap.TileSet = append(levelMap.TileSet, rootTile)
-					
-				key := strconv.Itoa(i) + "." + strconv.Itoa(j)
-				astar.Graph[key] = astar.Node{
-					Sx: mapData.TileHeight*j + mapData.TileHeight/2,
-					Sy: mapData.TileWidth*i + mapData.TileWidth/2,
-					Neighbors: map[string]string{},
-				}
 				
 				index++
 			}
 		}
 
+		//todo: добавить диагонали
 		for i := 0; i < mapData.Height; i++ {
 			for j := 0; j < mapData.Width; j++ {
-				key := strconv.Itoa(i) + "." + strconv.Itoa(j)
-				node, ok := astar.Graph[key]
-
-				if !ok {
-					continue
+				current := levelMap.TileSet[j + i*mapData.Width]
+				if j + (i-1)*mapData.Width >= 0 {
+					fmt.Println(current.GetTile().PosX, ", ", current.GetTile().PosY)
+					to := levelMap.TileSet[j + (i-1)*mapData.Width]
+					current.AddLink(current, to)
 				}
 
-				if i - 1 >= 0 {
-					key := strconv.Itoa(i-1) + "." + strconv.Itoa(j)
-					_, ok := astar.Graph[key]
-					if (ok) {
-						node.Neighbors[key] = key
-					}
+				if j + (i+1)*mapData.Width < 600 {
+					to := levelMap.TileSet[j + (i+1)*mapData.Width]
+					current.AddLink(current, to)
 				}
 
-				if i + 1 < mapData.Height {
-					key := strconv.Itoa(i+1) + "." + strconv.Itoa(j)
-					_, ok := astar.Graph[key]
-					if (ok) {
-						node.Neighbors[key] = key
-					}
+				if j - 1 + i*mapData.Width >= 0 {
+					to := levelMap.TileSet[j - 1 + i*mapData.Width]
+					current.AddLink(current, to)
 				}
 
-				if j - 1 >= 0 {
-					key := strconv.Itoa(i) + "." + strconv.Itoa(j-1)
-					_, ok := astar.Graph[key]
-					if (ok) {
-						node.Neighbors[key] = key
-					}
-				}
-
-				if j + 1 < mapData.Width {
-					key := strconv.Itoa(i) + "." + strconv.Itoa(j+1)
-					_, ok := astar.Graph[key]
-					if (ok) {
-						node.Neighbors[key] = key
-					}
+				if j + 1 + i*mapData.Width < 600 {
+					to := levelMap.TileSet[j + 1 + i*mapData.Width]
+					current.AddLink(current, to)
 				}
 			}
 		}

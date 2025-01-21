@@ -25,5 +25,4 @@ func (mapNode *mapNode) IsDisposed() bool {
 }
 
 func (mapNode *mapNode) Update(delta float64) {
-	// Здесь код, который раньше был в myGame Update.
 }

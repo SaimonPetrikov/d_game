@@ -2,7 +2,6 @@ package level_scene
 
 import (
 	"d_game/controls"
-	"d_game/core/astar"
 	"d_game/core/gobjects"
 	"d_game/core/resolve_collision"
 	utils "d_game/core/utils"
@@ -122,13 +121,6 @@ func (p *Player) Update(delta float64) {
 
 	} else {
 		p.Sprite = utils.LoadImage("assets/player/Handgun1.png")
-	}
-
-	if p.ActionIsPressed(controls.ActionConfirm) {
-		path := astar.FindPath("0.4", "8.0")
-		for i := 0; i < len(path); i++ {
-			fmt.Println(string(path[i]))
-		}
 	}
 
 	ebiten.CursorPosition()
