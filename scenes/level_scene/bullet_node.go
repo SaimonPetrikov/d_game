@@ -5,7 +5,6 @@ import (
 	"d_game/core/gscene"
 	"d_game/core/resolve_collision"
 	utils "d_game/core/utils"
-	"fmt"
 	"math"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -61,14 +60,18 @@ func (b *Bullet) Update(delta float64) {
 
 	if check := b.Check(math.Cos(b.angle)*4, 0, "solid"); check != nil {
 		b.IsDeleted = true
-		fmt.Println("solid")
+		if check.Objects[0].Sprite != nil {
+			check.Objects[0].TriggerChangeSprite(0.1)
+		}
 		dx = check.ContactWithObject(check.Objects[0]).X
 		dy = check.ContactWithObject(check.Objects[0]).Y
 	}
 
 	if check := b.Check(0, math.Sin(b.angle)*4, "solid"); check != nil {
+		if check.Objects[0].Sprite != nil {
+			check.Objects[0].TriggerChangeSprite(0.1)
+		}
 		b.IsDeleted = true
-		fmt.Println("solid")
 		dx = check.ContactWithObject(check.Objects[0]).X
 		dy = check.ContactWithObject(check.Objects[0]).Y
 	}

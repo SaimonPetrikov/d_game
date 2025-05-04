@@ -7,11 +7,20 @@ import (
 
 type CollisionObject *resolve_collision.Object
 
+//todo solve 
+type Triger interface {
+	Update()
+}
+
 type Object struct {
 	Type      ObjectType
 	IsDeleted bool
 	Sprite    *ebiten.Image
 	Speed     resolve_collision.Vector
 	*resolve_collision.Object
+}
+
+func (o Object) Update() {
+
 }
 

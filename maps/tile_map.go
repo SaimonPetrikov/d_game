@@ -2,6 +2,7 @@ package maps
 
 import (
 	"d_game/core/astar"
+	"d_game/core/resolve_collision"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -9,6 +10,7 @@ import (
 type TileMapI interface {
 	Draw(screen *ebiten.Image)
 	getImageOptions() *ebiten.DrawImageOptions
+	GetObject() *resolve_collision.Object
 	GetPosX() float64
 	GetPosY() float64
 	GetPosAndSize() (float64, float64, float64, float64)
@@ -34,6 +36,9 @@ type RootTileMap struct {
 	Width  float64
 	Links []Link
 	cost int
+}
+func (tile *RootTileMap) GetObject() *resolve_collision.Object {
+	return nil
 }
 
 func (tile *RootTileMap) AddLink(from, to TileMapI) {

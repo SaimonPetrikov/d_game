@@ -1,12 +1,25 @@
 package resolve_collision
 
 import (
+	"fmt"
 	"math"
 	"sort"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
+
+type Sprite struct {
+	healthPoint float64
+	texture  *ebiten.Image // The texture of the Sprite
+	Shader        *ebiten.Shader
+    ShaderTexture *ebiten.Image
+    ShaderParams  map[string]any
+	action func(float64, float64) (float32, float64)
+}
 
 // Object represents an object that can be spread across one or more Cells in a Space. An Object is essentially an AABB (Axis-Aligned Bounding Box) Rectangle.
 type Object struct {
+	Sprite *Sprite
 	Shape         IShape           // A shape for more specific collision-checking.
 	Space         *Space           // Reference to the Space the Object exists within
 	Position      Vector           // The position of the Object in the Space
@@ -31,6 +44,28 @@ func NewObject(x, y, w, h float64, tags ...string) *Object {
 	}
 
 	return o
+}
+
+func (o *Object) SetSprite(hp float64, img *ebiten.Image) {
+	o.Sprite = &Sprite{
+        healthPoint: hp,
+        texture:  img,
+    }
+}
+
+func (o *Object) SetShader(shader *ebiten.Shader, img *ebiten.Image, params map[string]any) {
+	o.Sprite.Shader = shader
+	o.Sprite.ShaderTexture = img
+	o.Sprite.ShaderParams = params
+}
+
+func (o *Object) SetAction(callback func(float64, float64)  (float32, float64)) {
+	o.Sprite.action = callback
+}
+
+func (o *Object) TriggerChangeSprite(damage float64) {
+	fmt.Println(o.Sprite.action(o.Sprite.healthPoint, damage))
+	o.Sprite.ShaderParams["HP"], o.Sprite.healthPoint = o.Sprite.action(o.Sprite.healthPoint, damage)
 }
 
 // Clone clones the Object with its properties into another Object. It also clones the Object's Shape (if it has one).
