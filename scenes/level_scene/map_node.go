@@ -25,4 +25,10 @@ func (mapNode *mapNode) IsDisposed() bool {
 }
 
 func (mapNode *mapNode) Update(delta float64) {
+	sceneState.Cam.Constrain(
+		float64(mapNode.levelMap.WidthCount)*16.0,
+		float64(mapNode.levelMap.HeightCount)*16.0,
+		340,
+		240,
+	)
 }

@@ -8,7 +8,7 @@ import (
 )
 
 type TileMapI interface {
-	Draw(screen *ebiten.Image)
+	Draw(screen *ebiten.Image, x, y float64)
 	getImageOptions() *ebiten.DrawImageOptions
 	GetObject() *resolve_collision.Object
 	GetPosX() float64
@@ -19,6 +19,7 @@ type TileMapI interface {
 	AddLink(from, to TileMapI)
 	GetCost() int
 	GetTile() *RootTileMap
+	SetPos(x, y float64)
 }
 
 type Link struct {
@@ -35,10 +36,17 @@ type RootTileMap struct {
 	Height float64
 	Width  float64
 	Links []Link
-	cost int
+	Cost int
+	Object *resolve_collision.Object
 }
+
+func (tile *RootTileMap) SetPos(x, y float64) {
+	tile.PosX += x
+	tile.PosY += y
+}
+
 func (tile *RootTileMap) GetObject() *resolve_collision.Object {
-	return nil
+	return tile.Object
 }
 
 func (tile *RootTileMap) AddLink(from, to TileMapI) {
@@ -46,7 +54,7 @@ func (tile *RootTileMap) AddLink(from, to TileMapI) {
 }
 
 func (tile *RootTileMap) GetCost() int {
-	return tile.cost
+	return tile.Cost
 }
 
 func (tile *RootTileMap) GetTile() *RootTileMap {
@@ -64,7 +72,7 @@ func (tile *RootTileMap) PathNeighbors() []astar.Pather {
 
 func (tile *RootTileMap) PathNeighborCost(to astar.Pather) float64 {
 	for _, link := range (tile).Links {
-		if astar.Pather((link.To.GetTile())) == to {
+		if astar.Pather(link.To.GetTile()) == to {
 			return link.Cost
 		}
 	}
@@ -73,11 +81,11 @@ func (tile *RootTileMap) PathNeighborCost(to astar.Pather) float64 {
 
 func (tile *RootTileMap) PathEstimatedCost(to astar.Pather) float64 {
 	toT := to.(*RootTileMap)
-	absX := toT.PosX - tile.PosY
+	absX := toT.PosX - tile.PosX
 	if absX < 0 {
 		absX = -absX
 	}
-	absY := toT.PosY - tile.PosX
+	absY := toT.PosY - tile.PosY
 	if absY < 0 {
 		absY = -absY
 	}
@@ -86,8 +94,10 @@ func (tile *RootTileMap) PathEstimatedCost(to astar.Pather) float64 {
 	return r
 }
 
-func (tile *RootTileMap) Draw(screen *ebiten.Image) {
-	screen.DrawImage(tile.Image, tile.getImageOptions())
+func (tile *RootTileMap) Draw(screen *ebiten.Image, x, y float64) {
+	tileOptions := tile.getImageOptions()
+	tileOptions.GeoM.Translate(x, y)
+	screen.DrawImage(tile.Image, tileOptions)
 }
 
 func (tile *RootTileMap) getImageOptions() *ebiten.DrawImageOptions {
@@ -97,11 +107,11 @@ func (tile *RootTileMap) getImageOptions() *ebiten.DrawImageOptions {
 }
 
 func (tile *RootTileMap) GetPosX() float64 {
-	return tile.PosX
+	return tile.PosX + 4
 }
 
 func (tile *RootTileMap) GetPosY() float64 {
-	return tile.PosY
+	return tile.PosY + 4
 }
 
 func (tile *RootTileMap) GetPosAndSize() (float64, float64, float64, float64) {

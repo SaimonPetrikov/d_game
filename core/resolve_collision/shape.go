@@ -78,32 +78,40 @@ type IShape interface {
 
 // A collidingLine is a helper shape used to determine if two ConvexPolygon lines intersect; you can't create a collidingLine to use as a Shape.
 // Instead, you can create a ConvexPolygon, specify two points, and set its Closed value to false (or use NewLine(), as this does it for you).
-type collidingLine struct {
+type CollidingLine struct {
 	Start, End Vector
 }
 
-func new_line(x, y, x2, y2 float64) *collidingLine {
-	return &collidingLine{
+func NewLineFromVector(v1, v2 Vector) *CollidingLine {
+	return &CollidingLine{
+		Start: v1,
+		End:   v2,
+	}
+}
+
+//todo rename
+func New_line(x, y, x2, y2 float64) *CollidingLine {
+	return &CollidingLine{
 		Start: Vector{x, y},
 		End:   Vector{x2, y2},
 	}
 }
 
-func (line *collidingLine) Project(axis Vector) Vector {
+func (line *CollidingLine) Project(axis Vector) Vector {
 	return line.Vector().Scale(axis.Dot(line.Start.Sub(line.End)))
 }
 
-func (line *collidingLine) Normal() Vector {
+func (line *CollidingLine) Normal() Vector {
 	v := line.Vector()
 	return Vector{v.Y, -v.X}.Unit()
 }
 
-func (line *collidingLine) Vector() Vector {
+func (line *CollidingLine) Vector() Vector {
 	return line.End.Sub(line.Start).Unit()
 }
 
 // IntersectionPointsLine returns the intersection point of a Line with another Line as a Vector, and if the intersection was found.
-func (line *collidingLine) IntersectionPointsLine(other *collidingLine) (Vector, bool) {
+func (line *CollidingLine) IntersectionPointsLine(other *CollidingLine) (Vector, bool) {
 
 	det := (line.End.X-line.Start.X)*(other.End.Y-other.Start.Y) - (other.End.X-other.Start.X)*(line.End.Y-line.Start.Y)
 
@@ -135,7 +143,7 @@ func (line *collidingLine) IntersectionPointsLine(other *collidingLine) (Vector,
 }
 
 // IntersectionPointsCircle returns a slice of Vectors, each indicating the intersection point. If no intersection is found, it will return an empty slice.
-func (line *collidingLine) IntersectionPointsCircle(circle *Circle) []Vector {
+func (line *CollidingLine) IntersectionPointsCircle(circle *Circle) []Vector {
 
 	points := []Vector{}
 
@@ -272,9 +280,9 @@ func (cp *ConvexPolygon) AddPointsVec(points ...Vector) {
 }
 
 // Lines returns a slice of transformed internalLines composing the ConvexPolygon.
-func (cp *ConvexPolygon) Lines() []*collidingLine {
+func (cp *ConvexPolygon) Lines() []*CollidingLine {
 
-	lines := []*collidingLine{}
+	lines := []*CollidingLine{}
 
 	vertices := cp.Transformed()
 
@@ -288,7 +296,7 @@ func (cp *ConvexPolygon) Lines() []*collidingLine {
 			break
 		}
 
-		line := new_line(start.X, start.Y, end.X, end.Y)
+		line := New_line(start.X, start.Y, end.X, end.Y)
 
 		lines = append(lines, line)
 
@@ -419,7 +427,7 @@ func (cp *ConvexPolygon) SATAxes() []Vector {
 func (polygon *ConvexPolygon) PointInside(point Vector) bool {
 
 	// Internally, we test for this by just making a line that extends into infinity and then checking for intersection points.
-	pointLine := new_line(point.X, point.Y, point.X+999999999999, point.Y)
+	pointLine := New_line(point.X, point.Y, point.X+999999999999, point.Y)
 
 	contactCount := 0
 

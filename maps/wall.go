@@ -24,6 +24,7 @@ type Wall struct {
 func NewWall(rootTile *RootTileMap) *Wall {
 	x, y, w, h := rootTile.GetPosAndSize()
 	object := resolve_collision.NewObject(x, y, w, h, "solid")
+	object.SetShape(resolve_collision.NewRectangle(x, y, w, h))
 	object.SetSprite(1.0, rootTile.Image)
 	object.SetAction(func(hp float64, damage float64) (float32, float64) {
 		hp -= damage
@@ -38,21 +39,27 @@ func NewWall(rootTile *RootTileMap) *Wall {
 	return &Wall{rootTile: rootTile, Object: object}
 }
 
-func (wall *Wall) Draw(screen *ebiten.Image) {
+func (wall *Wall) Draw(screen *ebiten.Image, x, y float64) {
 	if wall.Object.Sprite.Shader == nil {
         var options ebiten.DrawImageOptions
         options.GeoM.Translate(wall.rootTile.PosX, wall.rootTile.PosY)
+		options.GeoM.Translate(x, y)
         screen.DrawImage(wall.rootTile.Image, &options)
         return
     }
 
     var options ebiten.DrawRectShaderOptions
     options.GeoM.Translate(wall.rootTile.PosX, wall.rootTile.PosY)
+	options.GeoM.Translate(x, y)
     options.Images[0] = wall.rootTile.Image // Src0
     options.Images[1] = wall.Object.Sprite.ShaderTexture // Src1
     options.Uniforms = wall.Object.Sprite.ShaderParams
     b := wall.rootTile.Image.Bounds()
     screen.DrawRectShader(b.Dx(), b.Dy(), wall.Object.Sprite.Shader, &options)
+}
+func (wall *Wall) SetPos(x, y float64) {
+	wall.rootTile.PosX += x
+	wall.rootTile.PosY += y
 }
 
 func (wall *Wall) GetObject() *resolve_collision.Object {
@@ -67,7 +74,7 @@ func (wall *Wall) GetTile() *RootTileMap {
 }
 
 func (wall *Wall) GetCost() int {
-	return wall.rootTile.cost
+	return wall.rootTile.Cost
 }
 
 func (wall *Wall) getImageOptions() *ebiten.DrawImageOptions {

@@ -26,11 +26,11 @@ func (t *tileNode) Init(s *scene) {
 }
 
 func (t *tileNode) Draw(screen *ebiten.Image) {
-    t.tile.Draw(screen)
+    t.tile.Draw(screen, sceneState.Cam.X, sceneState.Cam.Y)
 }
 
 func (t *tileNode) IsDisposed() bool {
-	return t.IsDeleted
+	return false
 }
 
 func (t *tileNode) Update(delta float64) {

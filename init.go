@@ -1,18 +1,17 @@
 package main
 
 import (
+	"d_game/config"
 	"d_game/controls"
 	"d_game/core/game"
 	"d_game/core/input"
 	"d_game/core/resolve_collision"
 	mainmenuscene "d_game/scenes/main_menu_scene"
 	"fmt"
-	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 type state struct {
@@ -21,7 +20,7 @@ type state struct {
 
 type Game struct {
 	inputSystem input.System
-	ctx *game.Context
+	ctx         *game.Context
 }
 
 func main() {
@@ -41,7 +40,7 @@ func main() {
 		DevicesEnabled: input.AnyDevice,
 	})
 	context.Input = g.inputSystem.NewHandler(0, controls.DefaultKeymap)
-	context.Space =  resolve_collision.NewSpace(int(480), int(320), 16, 16)
+	context.Space = resolve_collision.NewSpace(config.SpaceWidth, config.SpaceHigh, config.CellWidth, config.CellHigh)
 
 	game.ChangeScene(context, mainmenuscene.NewMainMenuController(context))
 
@@ -51,28 +50,17 @@ func main() {
 	}
 }
 
-func (g *Game) Layout(outsideWidth int, outsideHeight int) (int, int) {
-	return outsideWidth, outsideHeight
+func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
+	return 340, 240
 }
 
 func (g *Game) Update() error {
 	g.inputSystem.Update()
-	g.ctx.CurrentScene().UpdateWithDelta(1.0 / 60.0)
+	g.ctx.CurrentScene().UpdateWithDelta(config.UpdateWithDelta)
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ebitenutil.DebugPrintAt(screen, fmt.Sprint(ebiten.ActualTPS()), 820, 750)
+	ebitenutil.DebugPrintAt(screen, fmt.Sprint(ebiten.ActualTPS()), 600, 750)
 	g.ctx.CurrentScene().Draw(screen)
-
-	for _, o := range g.ctx.Space.Objects() {
-		if (o.HasTags("enemy")) {
-			drawColor := color.RGBA{180, 100, 0, 255}
-			vector.DrawFilledRect(screen, float32(o.Position.X), float32(o.Position.Y), float32(o.Size.X), float32(o.Size.Y), drawColor, false)
-		}
-		if (o.HasTags("bullet")) {
-			drawColor := color.RGBA{180, 100, 0, 255}
-			vector.DrawFilledRect(screen, float32(o.Position.X), float32(o.Position.Y), float32(o.Size.X), float32(o.Size.Y), drawColor, false)
-		}
-	}
 }

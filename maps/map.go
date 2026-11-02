@@ -2,8 +2,8 @@ package maps
 
 import (
 	"d_game/core/gmap"
+	"d_game/core/resolve_collision"
 	utils "d_game/core/utils"
-	"fmt"
 	"strconv"
 
 	"github.com/hajimehoshi/ebiten/v2"
@@ -14,6 +14,7 @@ import (
 type LevelMap struct {
 	data gmap.Map
 	Height, Width int
+	HeightCount, WidthCount int
 	TileImages map[int]*ebiten.Image
 	tileOptions map[int]*ebiten.DrawImageOptions
 	TileSet []TileMapI
@@ -38,7 +39,8 @@ func InitMap (nameMap string) *LevelMap {
 	height := mapData.TileHeight
 	width := mapData.TileWidth
 
-	levelMap.Height, levelMap.Width = height, width
+	levelMap.Height, levelMap.Width = height, width	
+	levelMap.HeightCount, levelMap.WidthCount = mapData.Height, mapData.Width
 
 	for indexLayer := 0; indexLayer < len(mapData.Layers); indexLayer++ {
 		layer := mapData.Layers[indexLayer]
@@ -52,15 +54,17 @@ func InitMap (nameMap string) *LevelMap {
 					PosY: float64(width*i),
 					Height: float64(height),
 					Width: float64(width),
+					Object: resolve_collision.NewObject(float64(height*j), float64(width*i), float64(height), float64(width), "floor"),
 				}
+				rootTile.Object.SetShape(resolve_collision.NewRectangle(float64(height*j), float64(width*i), float64(height), float64(width)))
 				if tilesmap[tileId].Weight == 1 {
-					rootTile.cost = 100000000
+					rootTile.Cost = 100000000
 					levelMap.TileSet = append(levelMap.TileSet, NewWall(rootTile))
 					index++
 					continue
 				} 
 
-				rootTile.cost = 1
+				rootTile.Cost = 1
 				levelMap.TileSet = append(levelMap.TileSet, rootTile)
 				
 				index++
@@ -72,24 +76,31 @@ func InitMap (nameMap string) *LevelMap {
 			for j := 0; j < mapData.Width; j++ {
 				current := levelMap.TileSet[j + i*mapData.Width]
 				if j + (i-1)*mapData.Width >= 0 {
-					fmt.Println(current.GetTile().PosX, ", ", current.GetTile().PosY)
 					to := levelMap.TileSet[j + (i-1)*mapData.Width]
-					current.AddLink(current, to)
+					if !to.IsResolveCollision() {
+						current.AddLink(current, to)
+					}
 				}
 
 				if j + (i+1)*mapData.Width < 600 {
 					to := levelMap.TileSet[j + (i+1)*mapData.Width]
-					current.AddLink(current, to)
+					if !to.IsResolveCollision() {
+						current.AddLink(current, to)
+					}
 				}
 
 				if j - 1 + i*mapData.Width >= 0 {
 					to := levelMap.TileSet[j - 1 + i*mapData.Width]
-					current.AddLink(current, to)
+					if !to.IsResolveCollision() {
+						current.AddLink(current, to)
+					}
 				}
 
 				if j + 1 + i*mapData.Width < 600 {
 					to := levelMap.TileSet[j + 1 + i*mapData.Width]
-					current.AddLink(current, to)
+					if !to.IsResolveCollision() {
+						current.AddLink(current, to)
+					}
 				}
 			}
 		}
@@ -97,10 +108,6 @@ func InitMap (nameMap string) *LevelMap {
 
 	return levelMap
 }
-
-// func createGraph() {
-
-// }
 
 func (levelMap *LevelMap) getTileInCacheOrLoad(id int) *ebiten.Image {
 	if tile, ok := levelMap.TileImages[id]; ok {

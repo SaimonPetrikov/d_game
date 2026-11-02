@@ -38,3 +38,8 @@ func LoadLevelMapData(nameMap string) Map {
 
 	return result
 }
+
+func GetTileInSlice(x, y float64) int {
+	i, j := x/16, y/16
+	return int(j)*30 + int(i)
+}

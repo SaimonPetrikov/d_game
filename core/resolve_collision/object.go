@@ -1,7 +1,6 @@
 package resolve_collision
 
 import (
-	"fmt"
 	"math"
 	"sort"
 
@@ -64,7 +63,6 @@ func (o *Object) SetAction(callback func(float64, float64)  (float32, float64)) 
 }
 
 func (o *Object) TriggerChangeSprite(damage float64) {
-	fmt.Println(o.Sprite.action(o.Sprite.healthPoint, damage))
 	o.Sprite.ShaderParams["HP"], o.Sprite.healthPoint = o.Sprite.action(o.Sprite.healthPoint, damage)
 }
 

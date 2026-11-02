@@ -10,6 +10,7 @@ type CollisionObject *resolve_collision.Object
 //todo solve 
 type Triger interface {
 	Update()
+	Draw()
 }
 
 type Object struct {
